@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MyTargets — personal target and execution management dashboard." />
+  <title>MyTargets — Dashboard</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --surface: #ffffff;
+      --text: #172033;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #4f46e5;
+      --primary-soft: #eef2ff;
+      --success: #059669;
+      --success-soft: #ecfdf5;
+      --warning: #d97706;
+      --warning-soft: #fffbeb;
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+                   "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button, select { font: inherit; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+    }
+
+    aside {
+      background: #111827;
+      color: #fff;
+      padding: 28px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px 30px;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #fff;
+      color: #111827;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    nav a {
+      color: #cbd5e1;
+      text-decoration: none;
+      padding: 11px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    nav a:hover, nav a.active {
+      color: #fff;
+      background: rgba(255,255,255,.09);
+    }
+
+    .sidebar-note {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      bottom: 28px;
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    main {
+      padding: 30px;
+      max-width: 1500px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 26px;
+    }
+
+    h1 {
+      margin: 0 0 7px;
+      font-size: clamp(28px, 4vw, 38px);
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .today {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+    }
+
+    .stat-meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(300px, .8fr);
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .panel + .panel { margin-top: 20px; }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    select {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 9px;
+      padding: 7px 9px;
+      font-size: 12px;
+    }
+
+    .target-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .target {
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 16px;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .target:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(15,23,42,.06);
+    }
+
+    .target-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .target-name {
+      margin: 0 0 5px;
+      font-size: 15px;
+      font-weight: 750;
+    }
+
+    .target-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge.high { background: var(--danger-soft); color: var(--danger); }
+    .badge.medium { background: var(--warning-soft); color: var(--warning); }
+    .badge.low { background: #f3f4f6; color: #4b5563; }
+
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 15px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: #eef0f4;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: inherit;
+    }
+
+    .target-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 9px;
+    }
+
+    .status {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .status.not-started { color: var(--muted); }
+    .status.completed { color: var(--success); }
+
+    .focus {
+      background: linear-gradient(135deg, #eef2ff, #f8fafc);
+      border: 1px solid #dfe4ff;
+      border-radius: 13px;
+      padding: 17px;
+    }
+
+    .focus-label {
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+    }
+
+    .focus h3 {
+      margin: 7px 0 5px;
+      font-size: 17px;
+    }
+
+    .focus p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .focus-progress {
+      margin-top: 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .mini-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f1f3;
+    }
+
+    .mini-item:last-child { border-bottom: 0; }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      flex: 0 0 auto;
+    }
+
+    .mini-main { flex: 1; min-width: 0; }
+    .mini-name { font-size: 12px; font-weight: 700; }
+    .mini-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 15px 0;
+    }
+
+    footer {
+      color: var(--muted);
+      text-align: center;
+      font-size: 11px;
+      padding: 28px 0 5px;
+    }
+
+    @media (max-width: 1050px) {
+      .app { grid-template-columns: 1fr; }
+      aside {
+        height: auto;
+        position: static;
+        padding: 15px 18px;
+      }
+      .brand { padding: 0 5px 12px; }
+      nav { display: flex; flex-wrap: wrap; }
+      .sidebar-note { display: none; }
+      main { padding: 22px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .topbar { flex-direction: column; }
+      .today { white-space: normal; }
+    }
+
+    @media (max-width: 470px) {
+      main { padding: 16px; }
+      .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .stat { padding: 15px; }
+      .stat-value { font-size: 23px; }
+      .panel { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">M</div>
+        <div class="brand-name">MyTargets</div>
+      </div>
+
+      <nav>
+        <a class="active" href="#dashboard">Dashboard</a>
+        <a href="#targets">Targets</a>
+        <a href="#tasks">Tasks</a>
+        <a href="#progress">Progress</a>
+        <a href="#reviews">Reviews</a>
+      </nav>
+
+      <div class="sidebar-note">
+        Don't just manage tasks.<br />
+        <strong>Manage progress toward your targets.</strong>
+      </div>
+    </aside>
+
+    <main>
+      <section id="dashboard">
+        <div class="topbar">
+          <div>
+            <h1>My Targets</h1>
+            <p class="subtitle">Your personal target &amp; execution dashboard.</p>
+          </div>
+          <div class="today" id="today"></div>
+        </div>
+
+        <section class="stats" id="stats"></section>
+
+        <div class="grid">
+          <div>
+            <section class="panel" id="targets">
+              <div class="panel-header">
+                <h2 class="panel-title">Active Targets</h2>
+                <div class="controls">
+                  <select id="categoryFilter" aria-label="Filter by category">
+                    <option value="All">All categories</option>
+                  </select>
+                  <select id="priorityFilter" aria-label="Filter by priority">
+                    <option value="All">All priorities</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+              </div>
+              <div class="target-list" id="targetList"></div>
+            </section>
+          </div>
+
+          <div>
+            <section class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Today's Focus</h2>
+              </div>
+              <div id="focus"></div>
+            </section>
+
+            <section class="panel" id="progress">
+              <div class="panel-header">
+                <h2 class="panel-title">Recent Progress</h2>
+              </div>
+              <div class="mini-list" id="recentProgress"></div>
+            </section>
+
+            <section class="panel" id="reviews">
+              <div class="panel-header">
+                <h2 class="panel-title">System Status</h2>
+              </div>
+              <div class="mini-list">
+                <div class="mini-item">
+                  <span class="dot"></span>
+                  <div class="mini-main">
+                    <div class="mini-name">Dashboard</div>
+                    <div class="mini-sub">GitHub Pages ready</div>
+                  </div>
+                </div>
+                <div class="mini-item">
+                  <span class="dot"></span>
+                  <div class="mini-main">
+                    <div class="mini-name">Data source</div>
+                    <div class="mini-sub">Static demo data — Google Sheets integration next</div>
+                  </div>
+                </div>
+                <div class="mini-item">
+                  <span class="dot"></span>
+                  <div class="mini-main">
+                    <div class="mini-name">Architecture</div>
+                    <div class="mini-sub">Targets → Progress → Tasks → Reviews</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <footer>MyTargets · Personal target management system · v0.1</footer>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Temporary data from MyTargets.xlsx.
+    // Later this object can be replaced by data loaded from Google Sheets.
+    const targets = [
+      {
+        id: "T1",
+        name: "MyTargets WebApp",
+        category: "Education",
+        description: "Web app completion",
+        startDate: "2026-08-09",
+        dueDate: "2026-10-10",
+        target: 100,
+        completed: 10,
+        unit: "%",
+        priority: "High",
+        status: "InProgress",
+        lastUpdated: "2026-08-09",
+        progress: [
+          { date: "2026-08-09", value: 10, comment: "10% completed so far" }
+        ]
+      },
+      {
+        id: "T2",
+        name: "School Fees",
+        category: "Financial",
+        description: "Need to pay fees before 09/09/2026.",
+        startDate: "2026-08-07",
+        dueDate: "2026-09-09",
+        target: 84000,
+        completed: 25000,
+        unit: "₹",
+        priority: "Medium",
+        status: "InProgress",
+        lastUpdated: "2026-08-07",
+        progress: [
+          { date: "2026-08-07", value: 25000, comment: "FD" }
+        ]
+      },
+      {
+        id: "T3",
+        name: "Learn Java",
+        category: "Education",
+        description: "Spent 50 hours",
+        startDate: "2026-08-09",
+        dueDate: "2026-10-10",
+        target: 50,
+        completed: 50,
+        unit: "hours",
+        priority: "Low",
+        status: "Completed",
+        lastUpdated: "2026-08-09",
+        progress: [
+          { date: "2026-08-09", value: 50, comment: "50 hours completed" }
+        ]
+      },
+      {
+        id: "T4",
+        name: "Read Books",
+        category: "Knowledge",
+        description: "",
+        startDate: "2026-08-09",
+        dueDate: "2026-10-10",
+        target: 10,
+        completed: 0,
+        unit: "books",
+        priority: "High",
+        status: "NotStarted",
+        lastUpdated: null,
+        progress: []
+      },
+      {
+        id: "T5",
+        name: "Run",
+        category: "Health",
+        description: "",
+        startDate: "2026-08-09",
+        dueDate: "2026-10-10",
+        target: 24,
+        completed: 0,
+        unit: "km",
+        priority: "Low",
+        status: "NotStarted",
+        lastUpdated: null,
+        progress: []
+      }
+    ];
+
+    const moneyFormatter = new Intl.NumberFormat("en-IN", {
+      maximumFractionDigits: 2
+    });
+
+    function formatValue(value, unit) {
+      if (unit === "₹") return "₹" + moneyFormatter.format(value);
+      if (unit === "%") return moneyFormatter.format(value) + "%";
+      return moneyFormatter.format(value) + " " + unit;
+    }
+
+    function percentage(target) {
+      if (!target.target) return 0;
+      return Math.min(100, Math.max(0, (target.completed / target.target) * 100));
+    }
+
+    function formatDate(date) {
+      if (!date) return "Not updated";
+      return new Date(date + "T00:00:00").toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      });
+    }
+
+    function daysRemaining(dueDate) {
+      const today = new Date("2026-08-09T00:00:00");
+      const due = new Date(dueDate + "T00:00:00");
+      return Math.ceil((due - today) / 86400000);
+    }
+
+    function renderStats() {
+      const total = targets.length;
+      const completed = targets.filter(t => t.status === "Completed").length;
+      const active = targets.filter(t => t.status !== "Completed").length;
+      const averageProgress = targets.reduce((sum, t) => sum + percentage(t), 0) / total;
+
+      document.getElementById("stats").innerHTML = `
+        <div class="stat">
+          <div class="stat-label">Total Targets</div>
+          <div class="stat-value">${total}</div>
+          <div class="stat-meta">${active} active</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value">${completed}</div>
+          <div class="stat-meta">of ${total} targets</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Average Progress</div>
+          <div class="stat-value">${averageProgress.toFixed(1)}%</div>
+          <div class="stat-meta">across all targets</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">High Priority</div>
+          <div class="stat-value">${targets.filter(t => t.priority === "High" && t.status !== "Completed").length}</div>
+          <div class="stat-meta">need attention</div>
+        </div>
+      `;
+    }
+
+    function renderFilters() {
+      const categories = [...new Set(targets.map(t => t.category))].sort();
+      const select = document.getElementById("categoryFilter");
+      categories.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        select.appendChild(option);
+      });
+    }
+
+    function renderTargets() {
+      const category = document.getElementById("categoryFilter").value;
+      const priority = document.getElementById("priorityFilter").value;
+
+      const filtered = targets.filter(t =>
+        (category === "All" || t.category === category) &&
+        (priority === "All" || t.priority === priority)
+      );
+
+      const list = document.getElementById("targetList");
+
+      if (!filtered.length) {
+        list.innerHTML = '<div class="empty">No targets match the selected filters.</div>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(t => {
+        const pct = percentage(t);
+        const remaining = Math.max(0, t.target - t.completed);
+        const days = daysRemaining(t.dueDate);
+        const statusClass = t.status === "Completed"
+          ? "completed"
+          : t.status === "NotStarted"
+            ? "not-started"
+            : "";
+
+        return `
+          <article class="target">
+            <div class="target-top">
+              <div>
+                <h3 class="target-name">${t.id} · ${t.name}</h3>
+                <div class="target-meta">${t.category} · ${t.description || "No description"}</div>
+              </div>
+              <span class="badge ${t.priority.toLowerCase()}">${t.priority}</span>
+            </div>
+
+            <div class="progress-row">
+              <span>${formatValue(t.completed, t.unit)} / ${formatValue(t.target, t.unit)}</span>
+              <span>${pct.toFixed(1)}%</span>
+            </div>
+
+            <div class="progress-track" aria-label="${pct.toFixed(1)} percent complete">
+              <div class="progress-fill" style="width:${pct}%"></div>
+            </div>
+
+            <div class="target-footer">
+              <span>${remaining > 0 ? formatValue(remaining, t.unit) + " remaining" : "Target reached"}</span>
+              <span class="status ${statusClass}">${t.status}</span>
+              <span>${days >= 0 ? days + " days left" : "Overdue"}</span>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderFocus() {
+      const active = targets
+        .filter(t => t.status !== "Completed")
+        .sort((a, b) => {
+          const priorityOrder = { High: 0, Medium: 1, Low: 2 };
+          return priorityOrder[a.priority] - priorityOrder[b.priority] ||
+                 daysRemaining(a.dueDate) - daysRemaining(b.dueDate);
+        });
+
+      const focus = active[0];
+      const el = document.getElementById("focus");
+
+      if (!focus) {
+        el.innerHTML = '<div class="empty">All targets are completed. Excellent work.</div>';
+        return;
+      }
+
+      const pct = percentage(focus);
+      const remaining = Math.max(0, focus.target - focus.completed);
+
+      el.innerHTML = `
+        <div class="focus">
+          <div class="focus-label">Recommended focus</div>
+          <h3>${focus.id} · ${focus.name}</h3>
+          <p>${focus.description || "Make the next measurable step toward this target."}</p>
+          <div class="focus-progress">
+            ${formatValue(remaining, focus.unit)} remaining · ${daysRemaining(focus.dueDate)} days left
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRecentProgress() {
+      const entries = targets.flatMap(t =>
+        t.progress.map(p => ({ ...p, targetName: t.name, targetId: t.id, unit: t.unit }))
+      ).sort((a, b) => b.date.localeCompare(a.date));
+
+      const el = document.getElementById("recentProgress");
+
+      if (!entries.length) {
+        el.innerHTML = '<div class="empty">No progress entries yet.</div>';
+        return;
+      }
+
+      el.innerHTML = entries.slice(0, 5).map(p => `
+        <div class="mini-item">
+          <span class="dot"></span>
+          <div class="mini-main">
+            <div class="mini-name">${p.targetId} · ${p.targetName}</div>
+            <div class="mini-sub">${formatValue(p.value, p.unit)} · ${formatDate(p.date)}${p.comment ? " · " + p.comment : ""}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    document.getElementById("today").textContent =
+      new Date("2026-08-09T00:00:00").toLocaleDateString("en-IN", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+
+    document.getElementById("categoryFilter").addEventListener("change", renderTargets);
+    document.getElementById("priorityFilter").addEventListener("change", renderTargets);
+
+    renderFilters();
+    renderStats();
+    renderTargets();
+    renderFocus();
+    renderRecentProgress();
+  </script>
+</body>
+</html>
